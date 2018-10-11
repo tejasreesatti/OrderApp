@@ -3,6 +3,8 @@ package com.capgemini.shoppingapp.service.impl;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.capgemini.shoppingapp.entity.LineItem;
 import com.capgemini.shoppingapp.entity.Order;
+import com.capgemini.shoppingapp.exceptions.OrderNotFoundException;
 import com.capgemini.shoppingapp.repository.OrderRepository;
 import com.capgemini.shoppingapp.service.ShoppingAppService;
 @Service
@@ -53,37 +56,41 @@ public class ShoppingAppServiceImpl implements ShoppingAppService {
 	}
 
 	@Override
-	public Set<Order> getAllOrders() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Order> getAllOrders() {
+		return orderRepository.find();
 	}
 
 	@Override
-	public Order getOrder(int OrderId) {
-		// TODO Auto-generated method stub
-		return null;
+	public Order getOrder(int OrderId) throws OrderNotFoundException{
+		Optional<Order> optionalOrder = orderRepository.findById(OrderId);
+		if(optionalOrder.isPresent())
+			return optionalOrder.get();
+		throw new OrderNotFoundException("The Requested Order cannot be found");
 	}
 
 	@Override
 	public Order submitOrder(Order order) {
-		/*Order order = new Order();
-		order.setCustomerId(customerId);
 		order.setOrderDate(LocalDate.now());
-		order.setOrderTotal(1000);
-		order.setLineitem(cart.get(customerId));*/
+		order.setStatus("OrderInProcess");
 		return orderRepository.save(order);
+		
 		
 	}
 
 	@Override
 	public void deleteOrder(int orderId) {
-		// TODO Auto-generated method stub
+		Order order = getOrder(orderId);
+		order.setStatus("OrderDeleted");
+		orderRepository.save(order);
 		
 	}
 
 	@Override
 	public void cancelOrder(int orderId) {
-		// TODO Auto-generated method stub
+		Order order = getOrder(orderId);
+		order.setStatus("OrderCancelled");
+		orderRepository.save(order);
+		
 		
 	}
 
